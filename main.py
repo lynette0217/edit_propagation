@@ -18,10 +18,10 @@ def make_parser():
     aa("--alg", type=str, default="AppProp", help="the algorithm you want to choose for edit propogation.",
        choices=["AppProp", "KDtree", "sketch"])
 
-    aa("--img", type=str, default="2",
+    aa("--img", type=str, default="1",
        help="the path of the image you want to process.")
 
-    aa("--m", type=int, default=500,
+    aa("--m", type=int, default=600,
        help="the column of the low rank matrix, U is n*m.")
     aa("--k", type=int, default=200, help="the number of columns for sketch matrix S")
     aa("--operation", type=int, default=1,
@@ -76,8 +76,15 @@ if __name__ == '__main__':
     output_img = np.zeros((img_rows, img_cols, 3))
     # U = affinity_calculation(
     # origin_img, m, n, args.sigma_a, args.sigma_s)
-    U, A = affinity_calculation(
-        lab_img, m, n, args.sigma_a, args.sigma_s)
+    file_path = "./matrices/"+"-img=" + \
+        str(args.img)+"-m="+str(m)+"-sigma_a=" + \
+        str(args.sigma_a)+"-sigma_s="+str(args.sigma_s)+"/"
+    if os.path.exists(file_path):
+        U, A = np.load(file_path+"U.npy"), np.load(file_path+"A.npy")
+        print("finish matrix U loading")
+    else:
+        U, A = affinity_calculation(
+            lab_img, m, n, args.sigma_a, args.sigma_s, args.img)
     # for i in range(3):  # for three channels, calculate each
     #     print("---------BEGIN THE %d CHANNEL CALCULATION---------" % (i+1))
     # sketch_vector = torch.randint(m, [args.k, n]).int()

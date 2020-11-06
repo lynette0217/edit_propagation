@@ -79,7 +79,7 @@ def basic_calculation(weight_edited, weight_nonedited, image, mask, operation, b
     return lambda_result, g, W
 
 
-def affinity_calculation(image, m, n, sigma_a, sigma_s):
+def affinity_calculation(image, m, n, sigma_a, sigma_s, img_num):
     U = np.ones((n, m)) * (-1)
     A = np.ones((m, m)) * (-1)
     # Here, we begin to sample matrix U
@@ -136,6 +136,13 @@ def affinity_calculation(image, m, n, sigma_a, sigma_s):
         if(np.any(A == -1)):
             print("ERROR:some elements in A matrix didn't get assgined!")
             exit(0)
+    print("saving affinity matrix")
+    file_path = "./matrices/"+"-img=" + \
+        str(img_num)+"-m="+str(m)+"-sigma_a=" + \
+        str(sigma_a)+"-sigma_s="+str(sigma_s)+"/"
+    os.makedirs(file_path)
+    np.save(file_path+"U.npy", U)
+    np.save(file_path+"A.npy", A)
     return U, A
 
 
