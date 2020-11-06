@@ -81,29 +81,46 @@ def basic_calculation(weight_edited, weight_nonedited, image, mask, operation, b
 
 def affinity_calculation(image, m, n, sigma_a, sigma_s):
     U = np.ones((n, m)) * (-1)
+    A = np.ones((m, m)) * (-1)
+    # Here, we begin to sample matrix U
+
+    # index[i] means that the index[i]th column in Z == the ith column in U
+    index = np.ones(m) * (-1)
+    if m == n:
+        for i in range(m):
+            index[i] = i
+    elif m != n:
+        # index = np.sort(random.sample(range(0, n), m))
+        for i in range(m):
+            index[i] = int((i*int(n/m)))
+            # print(index[i])
+
+    # Now we can use index_list.index(x) to find out that element is index[which],
+    # index_list = index.tolist()
+    # which means we're able to know column x in Z is which column in U
 
     # f: pixel color(here we have three channels) + the average and the std of the 3*3 neighbors.
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     std, avg = std_avg(gray)
 
     rows = image.shape[1]
-    for i in range(n):
-        for j in range(m):
+    # Note that when we calculate the U[i][j], we actually are calculating the similarity between the index[i]th and index[j]th point.
+    for i in range(n):  # row-->doesn't need to sample
+        for j in range(m):  # column--->needs to sample
             # print(j)
             if i < j or i == m or i > m or i == j:
                 f_i, f_j = np.zeros(5), np.zeros(5)
                 f_i[0:3] = image[int(i/rows), int(i % rows), 0:3]
-                f_j[0:3] = image[int(j/rows), int(j % rows), 0:3]
-                # f_i[0] = image[int(i/rows), int(i % rows)]
-                # f_j[0] = image[int(j/rows), int(j % rows)]
+                f_j[0:3] = image[int(index[j]/rows), int(index[j] % rows), 0:3]
+
                 f_i[3], f_i[4] = std[int(i/rows), int(i %
                                                       rows)], avg[int(i/rows), int(i % rows)]
-                f_j[3], f_j[4] = std[int(j/rows), int(j %
-                                                      rows)], avg[int(j/rows), int(j % rows)]
+                f_j[3], f_j[4] = std[int(index[j]/rows), int(index[j] %
+                                                             rows)], avg[int(index[j]/rows), int(index[j] % rows)]
                 left = -(np.square(np.linalg.norm(f_i-f_j)))/sigma_a
                 right = - \
                     (np.square(np.linalg.norm(
-                        [int(i/rows)-int(j/rows), int(i % rows)-int(j % rows)])))/sigma_s
+                        [int(i/rows)-int(index[j]/rows), int(i % rows)-int(index[j] % rows)])))/sigma_s
                 U[i][j] = math.exp(left) * math.exp(right)
             elif i > j and i < m:
                 U[i][j] = U[j][i]
@@ -114,13 +131,20 @@ def affinity_calculation(image, m, n, sigma_a, sigma_s):
     if(np.any(U == -1)):
         print("ERROR:some elements in U matrix didn't get assgined!")
         exit(0)
-    return U
+    if m != n:
+        A = U[index.astype('int64'), :]
+        if(np.any(A == -1)):
+            print("ERROR:some elements in A matrix didn't get assgined!")
+            exit(0)
+    return U, A
 
 
-def appProp_lra_calculation(U, g, W, m, n, lambda_result):
+def appProp_lra_calculation(U, A, g, W, m, n, lambda_result):
     e = np.zeros(n)
 
-    A = U[:m, :m]
+    if m == n:
+        A = U[:m, :m]
+
     A_inverse = np.linalg.inv(A)
     U_transpose = U.T
     # Here we calculate matrix D step by step

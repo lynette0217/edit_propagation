@@ -18,10 +18,10 @@ def make_parser():
     aa("--alg", type=str, default="AppProp", help="the algorithm you want to choose for edit propogation.",
        choices=["AppProp", "KDtree", "sketch"])
 
-    aa("--img", type=str, default="1",
+    aa("--img", type=str, default="2",
        help="the path of the image you want to process.")
 
-    aa("--m", type=int, default=-1,
+    aa("--m", type=int, default=500,
        help="the column of the low rank matrix, U is n*m.")
     aa("--k", type=int, default=200, help="the number of columns for sketch matrix S")
     aa("--operation", type=int, default=1,
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
     defaults = parser.parse_args([])
-    path = "./figs/"+args.img + ".png"
+    path = "./figs/org/"+args.img + ".png"
     mp = MaskPainter(image_path=path, operation=args.operation)
     mask_path = mp.paint_mask()
     cv2.destroyAllWindows()
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     output_img = np.zeros((img_rows, img_cols, 3))
     # U = affinity_calculation(
     # origin_img, m, n, args.sigma_a, args.sigma_s)
-    U = affinity_calculation(
+    U, A = affinity_calculation(
         lab_img, m, n, args.sigma_a, args.sigma_s)
     # for i in range(3):  # for three channels, calculate each
     #     print("---------BEGIN THE %d CHANNEL CALCULATION---------" % (i+1))
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     # U = np.dot(S, U)
 
     if args.alg == "AppProp":
-        e = appProp_lra_calculation(U, g, W, m, n, lambda_result)
+        e = appProp_lra_calculation(U, A, g, W, m, n, lambda_result)
     # elif args.alg == "sketch":
 
     output_lab = e.reshape((img_rows, img_cols, 3))
@@ -100,5 +100,5 @@ if __name__ == '__main__':
 
     print("ALL THE CALCULATION HAS FINISHED!")
     out_path = "./figs/results/"
-    cv2.imwrite(out_path+"img=="+args.img+"---w_e="+str(args.weight_edited)+"-w_n="+str(args.weight_nonedited)
+    cv2.imwrite(out_path+"img=="+args.img+"--m="+str(args.m)+"-w_e="+str(args.weight_edited)+"-w_n="+str(args.weight_nonedited)
                 + "-operation="+str(args.operation)+"-beta="+str(args.beta)+"-sigma_a="+str(args.sigma_a)+"-sigma_s="+str(args.sigma_s)+".png", output_img)
