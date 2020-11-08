@@ -66,9 +66,9 @@ def basic_calculation(weight_edited, weight_nonedited, image, mask, operation, b
                     g[i*cols + j][1] = image[i][j][1]
                     g[i*cols + j][0] = image[i][j][0]
                 elif operation == 2:
-                    g[i*cols + j][0] = 255
-                    g[i*cols + j][1] = 255
-                    g[i*cols + j][2] = 255
+                    g[i*cols + j][0] = 256
+                    g[i*cols + j][1] = 128
+                    g[i*cols + j][2] = 128
             else:
                 print(
                     "something is wrong about the mask in the lambda_calculate function.")

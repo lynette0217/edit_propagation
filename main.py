@@ -21,7 +21,7 @@ def make_parser():
     aa("--img", type=str, default="1",
        help="the path of the image you want to process.")
 
-    aa("--m", type=int, default=600,
+    aa("--m", type=int, default=500,
        help="the column of the low rank matrix, U is n*m.")
     aa("--k", type=int, default=200, help="the number of columns for sketch matrix S")
     aa("--operation", type=int, default=1,
